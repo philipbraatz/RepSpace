@@ -1,0 +1,104 @@
+# Platform Vision and Core Tenants
+
+## Community-Driven Growth and Structure
+The platform evolves through user participation, with categories, rules, and design decisions shaped by structured voting processes. Communities are structured to allow for both tight and loose relationships. Tightly related communities share reputation, voting privileges, and collaborative features, encouraging integration between similar groups. Smaller communities are incentivized to merge with larger ones to maintain an optimal size and reduce fragmentation.
+
+## Decentralized Hosting
+Core functions of the platform are centrally hosted, while user-generated content is hosted by the users themselves. This decentralized approach provides users with control over their own content and ensures the platform remains sustainable. Tools are available to simplify hosting, allowing users to mirror content or manage their storage and bandwidth efficiently. For those who prefer not to self-host, paid hosting services are available.
+
+## Reputation and Collaboration
+Two distinct yet interconnected systems track user contributions: reputation and collaboration points. Reputation is earned through interactions and contributions in specific categories, influencing voting power, moderation abilities, and visibility. Collaboration points, on the other hand, promote teamwork and collective achievements. These points are used for group interactions, community milestones, and platform rewards, fostering a sense of community and cooperation.
+
+## Dynamic Moderation
+Moderation is a responsibility shared by all users, but those with higher reputations in specific categories gain additional permissions, visibility, and influence over moderation decisions. The platform employs a “shadow badge” system, where moderation actions are transparent to users with the correct permissions, ensuring that the community can trust moderation without being overwhelmed by the details.
+
+## Complex, Transparent Voting
+Voting is central to the platform, with a structured five-option system used to gauge community sentiment on key issues. Rather than simple yes/no choices, users can provide nuanced feedback, such as “Good for the community” or “Harmful to the community.” Voting happens on a weekly cycle, with proposals submitted on a designated day followed by a week of voting. High-reputation users gain early access to the voting process, ensuring their influence is proportional to their contributions before votes are opened to the broader community.
+
+## Rule-Based Categorization
+Categories and posts are governed by a hierarchy of rules and tags, such as “NSFW,” “kid-friendly,” or “paywall.” These rules set clear expectations for content and guide user interactions. The platform enables users to create and enforce complex rules through both user moderation and automated systems, keeping the categorization system flexible yet easy to navigate.
+
+## Gamification and User Autonomy
+To encourage active participation, the platform integrates gamification elements like leaderboards, badges, and customizable profiles. Users can shape the structure and growth of the platform through voting and collaboration milestones. These elements are balanced carefully to maintain a dynamic, user-driven ecosystem without overwhelming users with too many gamified features.
+
+---
+
+# Core System Layout and Feature Set
+
+## Voting System
+
+### Weekly Voting Windows
+Voting follows a weekly cycle, where users submit proposals on a designated day, and voting continues throughout the week. This structured process ensures regular participation and helps maintain an active user base.
+
+### Voting Options
+Instead of presenting binary choices, users can select from nuanced options, allowing more detailed feedback. For example, users can vote that a proposal is "Good for the community" or "Harmful to the community," helping the platform make more informed decisions.
+
+### Visibility Control
+High-reputation users have early access to vote, giving them greater influence over platform decisions. Once they have participated, voting opens to the broader community. This tiered system ensures that experienced and trusted users guide important decisions.
+
+## Reputation and Collaboration Points
+
+### Reputation System
+Reputation is earned based on user contributions within categories. Users gain global and category-specific reputation, which influences their voting power, moderation capabilities, and visibility on the platform. Higher-reputation users are trusted with more significant responsibilities, such as influencing decisions in their areas of expertise.
+
+### Collaboration Points
+Collaboration points are earned separately from reputation and focus on promoting teamwork. They encourage users to work together on shared goals, and both individuals and communities can earn collaboration points. These points are used to unlock platform rewards, participate in community milestones, or interact with platform features.
+
+## Moderation and Rules
+
+### Everyone as a Moderator
+All users are encouraged to moderate content, but those with higher reputations in specific categories gain additional moderation powers. This keeps moderation community-driven but ensures that the most trusted users have greater influence.
+
+### Rule Hierarchy and Tagging System
+Categories are defined by a set of tags (e.g., "NSFW," "kid-friendly," "verified"). These tags help set clear expectations for content within each category. Users can define complex rules, which are enforced by both human moderators and automated systems.
+
+### Shadow Badges for Moderation
+Moderation actions are marked with shadow badges, making them visible to users with appropriate permissions. This ensures transparency and trust in the moderation system without revealing excessive detail to casual users.
+
+## Content Creation and Hosting
+
+### Clubs and Categories
+Users can form smaller communities called clubs. As clubs grow in size and influence, they can be voted into full-fledged categories through community voting. This ensures that only meaningful, well-supported categories are promoted, preventing the platform from becoming cluttered with underpopulated or redundant categories.
+
+### Self-Hosting and Content Mirroring
+Users can host their own content by managing storage limits, bandwidth, and content retention settings. The system automatically mirrors content for users who interact with it frequently, ensuring availability and redundancy. High-reputation users can also opt to mirror older content that hasn’t received views in some time, helping to preserve valuable content.
+
+## Category Management
+
+### Merging and Splitting Mechanisms
+Communities that grow too large can be split through a community vote. Conversely, smaller communities or clubs that fall below a set threshold are encouraged to merge with similar communities. This dynamic splitting and merging helps maintain optimal community sizes and prevents fragmentation or stagnation.
+
+### Automated Similarity Detection
+An automated system flags similar or redundant categories, suggesting possible merges. This ensures the platform remains organized and efficient, preventing the creation of too many overlapping or redundant spaces.
+
+## Monetization
+
+### Revenue Sharing and Paid Hosting
+High-reputation users can earn compensation for their contributions, whether through platform-sponsored content or revenue-sharing programs. For users who do not want to self-host their content, the platform offers a paid hosting option.
+
+### Microtransactions and Customization
+Users can purchase customizable features, such as enhanced profiles, special badges, or UI customization options. Collaboration points can also be spent on these features, making them accessible without requiring monetary transactions. Premium services may include additional content storage, enhanced hosting capabilities, or other exclusive platform features.
+
+---
+
+# Key Considerations and Challenges
+
+## Community Fragmentation
+To prevent the platform from becoming too fragmented, tightly related communities share reputation, voting privileges, and collaboration points. This allows users to participate across multiple communities without becoming isolated in a single group. Smaller communities are incentivized to merge when they fall below a set threshold, preventing dead or redundant spaces from forming.
+
+## Technical Barriers
+While self-hosting is a core feature, the platform simplifies setup with automated tools and user-friendly guides. This ensures broader adoption, even among users with minimal technical skills.
+
+## Over-Gamification
+The platform includes gamification elements to foster engagement, but there is a need to avoid over-gamifying the experience. Meaningful rewards, collaboration points, and community milestones are used to encourage long-term participation without overwhelming the platform with unnecessary badges or leaderboards.
+
+---
+
+# Summary of Core Features
+
+- **Community-Driven Growth:** Tightly related communities share reputation, voting power, and collaboration points to encourage integration and reduce fragmentation.
+- **Decentralized Hosting:** Users host their own content, with automated systems to manage mirroring and bandwidth. Paid hosting options are available for those who prefer centralized solutions.
+- **Reputation and Collaboration:** Users earn reputation for individual contributions, while collaboration points incentivize teamwork and community-driven goals.
+- **Complex Voting and Moderation:** A nuanced voting system allows for detailed feedback, while high-reputation users play a key role in guiding decisions. Transparent moderation is enforced through shadow badges and user-driven rule enforcement.
+- **Dynamic Category Management:** Communities dynamically merge or split based on size and activity, with automated suggestions for merging redundant categories.
+- **Monetization:** High-reputation users can earn rewards through revenue-sharing, and users can customize their experience through microtransactions and collaboration points.
