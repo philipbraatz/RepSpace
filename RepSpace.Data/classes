@@ -1,0 +1,154 @@
+User and Profile Entities
+    User
+        UniqueId
+        Username
+        Email (hashed or tokenized for privacy)
+        PasswordHash / SecurityKey (for centralized accounts)
+        JoinDate
+        LastActiveDate
+        ReputationScore (total reputation)
+        CollaborationScore (total collaboration points)
+        Role (Admin, Moderator, Regular, etc.)
+        Preferences (e.g., self-hosting vs. platform-hosting)
+
+    UserProfile
+        UserId (FK to User)
+        DisplayName
+        Bio
+        AvatarUrl
+        SocialLinks (optional; e.g., links to other profiles or personal sites)
+        Settings (e.g., content visibility, NSFW preference)
+        UserAchievement
+
+    AchievementId
+        UserId (FK to User)
+        EarnedDate
+        Badge (Type of achievement)
+        PointsAwarded (any associated reputation or collaboration points)
+        Reputation and Collaboration Entities
+        ReputationLog
+
+    ReputationLogId
+        UserId (FK to User)
+        CategoryId (FK to Category)
+        PointsEarned
+        ActionType (e.g., Post, Comment, Moderation)
+        Timestamp
+        Description (e.g., brief log for why points were awarded/deducted)
+
+    CollaborationLog
+        CollaborationLogId
+        UserId (FK to User)
+        CategoryId (FK to Category)
+        PointsEarned
+        EventType (e.g., Team Project, Community Milestone)
+        Timestamp
+        Description
+        Community and Content Entities
+
+    Category
+        CategoryId
+        Name
+        Description
+        ParentCategoryId (for nested communities)
+        CreatedDate
+        Rules (tags like NSFW, kid-friendly, etc.)
+        ActiveStatus (for detecting inactive or redundant communities)
+    
+    Community
+        CommunityId
+        CategoryId (FK to Category)
+        Name
+        Description
+        CreatedDate
+        LastActiveDate
+        ReputationThreshold (required reputation to join)
+
+    Post
+        PostId
+        AuthorId (FK to User)
+        CategoryId (FK to Category)
+        Title
+        Content (text, or a URL to the user-hosted content)
+        CreatedDate
+        ModifiedDate
+        Tags (e.g., NSFW, Verified, Sponsored)
+    
+    Comment
+        CommentId
+        PostId (FK to Post)
+        AuthorId (FK to User)
+        Content
+        CreatedDate
+        ModifiedDate
+        ParentCommentId (for threaded comments)
+
+Voting and Moderation Entities
+    Vote
+        VoteId
+        UserId (FK to User)
+        TargetId (FK to either Post, Comment, or Proposal)
+        VoteType (e.g., Upvote, Downvote, Community Benefit, Community Harm)
+        Timestamp
+
+    Proposal
+        ProposalId
+        CreatorId (FK to User)
+        CategoryId (FK to Category)
+        Title
+        Description
+        SubmissionDate
+        VoteStatus (e.g., Open, Closed, Under Review)
+        DecisionDate
+
+    ModerationAction
+        ModerationActionId
+        ModeratorId (FK to User)
+        TargetId (FK to Post, Comment, User)
+        ActionType (e.g., Warn, Ban, Remove Content)
+        Timestamp
+        Reason (short description for transparency)
+        Hosting and Content Distribution Entities
+
+    UserHostedContent
+        ContentId
+        UserId (FK to User)
+        ContentUrl (URL or IPFS hash for self-hosted content)
+        HostType (e.g., Self, Platform, Mirror)
+        CreatedDate
+        LastAccessedDate
+        RetentionStatus (Active, Archived, Deleted)
+    MirrorRequest
+        MirrorRequestId
+        ContentId (FK to UserHostedContent)
+        RequestedBy (FK to User)
+        ApprovalStatus (e.g., Pending, Approved, Denied)
+        RequestedDate
+        ExpirationDate
+Analytics and Reporting Entities
+    CommunityMetrics
+        MetricId
+        CategoryId (FK to Category)
+        TimePeriod (e.g., Weekly, Monthly)
+        TotalPosts
+        TotalComments
+        ActiveUsers
+        GrowthRate (new user engagement rate)
+        RetentionRate
+    UserEngagement
+        EngagementId
+        UserId (FK to User)
+        Date
+        EngagementType (e.g., PostCreation, Vote, Comment)
+        Frequency (e.g., Daily/Weekly count of actions)
+        TimeSpent (estimated time spent on the platform)
+
+Relationship Mapping and Helper Classes
+To support entity relationships:
+s
+UserCategoryReputation - Mapping table for user reputation in specific categories.
+CommunityMember - Mapping for users in specific communities with roles and join dates.
+CategoryRule - Specific rules or tags that apply to each category, like NSFW or paywall indicators.
+Structure and Entity Relationships
+One-to-Many Relationships: e.g., a User to Post, Category to Post, Community to User.
+Many-to-Many Relationships: e.g., User can belong to multiple Community, User can have reputation in multiple Category.
