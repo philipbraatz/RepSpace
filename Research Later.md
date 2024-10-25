@@ -1,114 +1,105 @@
-Research Later
-(
-    Decentralized Social Platforms: 
-        Mastodon (ActivityPub) - Federated model for user control of content and independent communities.
-        Scuttlebutt and Matrix (P2P Protocols) - Scalable peer-to-peer data distribution for user-hosted content.
+---
 
-    Voting and Reputation Systems:
-        Loomio - For structured voting processes and group decision-making.
-        Karma Systems in Reddit or Stack Overflow - Reputation-based voting privileges and moderation control.
+**Solution Structure for Repspace**
 
-    Gamification Libraries:
-        BadgeKit - Mozilla's gamification library for managing achievements and badges.
-        BadgeOS - WordPress plugin for gamified user achievements, customizable for non-WordPress projects.
-        Open Badges - Open standard for badge-driven achievements and interoperability across platforms.
-        Google Analytics / Mixpanel - For tracking user engagement and community health metrics.
+---
 
-    Decentralized Hosting:
-        Event-Driven Architecture (e.g., using RabbitMQ) - Asynchronous, real-time notifications and updates.
-        IPFS (InterPlanetary File System) - Decentralized storage protocol for user-hosted content.
-        ActivityPub Protocol - For federated communication between decentralized user servers.
+### Core Platform Modules
 
-)
+1. **RepSpace.Core.Auth**  
+   **MVP**  
+   - **User Management and Authentication**: Centralized user authentication with basic profile management for secure access. Optional future enhancement for decentralized sync.
+     - **Essential Classes**: `User`, `AuthToken`, `Session`, `UserProfile`
 
-Tech Stack [Confirmed libraries]
-(
-    ASP.NET Core - Backend framework for RESTful API management and microservices.
-    PostgreSQL - Relational database for tracking reputation, communities, and content.
-    Blazor WebAssembly - Front-end framework, especially for component-based UI needs.
+2. **RepSpace.Core.Rep**  
+   **MVP**  
+   - **Reputation & Collaboration Module**: Tracks basic reputation and collaboration points based on contributions, influencing voting power and privileges.
+     - **Essential Classes**: `ReputationScore`, `CollaborationPoint`, `Contribution`
 
-)
+3. **RepSpace.Moderation**  
+   **MVP**  
+   - **Moderation and Voting System**: Essential voting system for content decisions with basic tiered voting and moderation.
+     - **RepSpace.Moderation.Voting**  
+         - **Voting Engine**: Structured voting with basic weekly cycles.
+         - **Voting Permissions**: Visibility for high-reputation users.
+     - **Essential Classes**: `Vote`, `VoteOption`, `VotingCycle`, `Moderator`
 
-Solution Structure [RepSpace.*Project Name*]
-(
-    ### Core Platform Modules
+4. **RepSpace.Activity**  
+   *Post-MVP*  
+   - **Gamification and Leaderboards**: Manages gamification, badges, and collaborative rewards. Useful for later stages when engagement and retention need boosting.
+     - **Essential Classes**: `Badge`, `Achievement`, `Leaderboard`
 
-    **RepSpace.Core.Auth**
-        User Management and Authentication: 
-            Provides secure, centralized user authentication with options for decentralized sync to support reputation continuity across user-hosted and platform-hosted environments.
+5. **RepSpace.Analyze**  
+   *Post-MVP*  
+   - **Community Growth and Similarity Detection**: ML-driven community analysis to recommend merges/splits, aiding ecosystem balance.
+     - **Essential Classes**: `CommunityAnalysis`, `SimilarityMetric`, `MergeRecommendation`
 
-    **RepSpace.Core.Rep**
-        Reputation & Collaboration Module: 
-            Tracks and manages reputation/collaboration points based on user contributions in specific categories, influencing voting power, badges, and user privileges across communities.
-    
-    **RepSpace.Moderation**
-        Moderation and Voting System:
-            Facilitates complex voting processes with structured, multi-option choices; tiered voting visibility for high-reputation users; and nuanced moderation with shadow badges for transparency.
-            
-        RepSpace.Moderation.Voting
-            Voting Engine: 
-                Weekly voting cycles with structured proposal submission; high-reputation users can guide decisions before broader user votes.
-            Voting Permissions: 
-                Restricts visibility for high-reputation voters, enabling early participation and influence.
+---
 
-    **RepSpace.Activity**
-        Gamification and Leaderboards:
-            Manages gamification elements like badges, leaderboards, and achievement tracking, supporting user engagement through meaningful rewards and collaborative milestones.
+### Content Hosting and Distribution Modules
 
-    **RepSpace.Analyze**
-        Community Growth and Similarity Detection:
-            Machine-learning-based analytics module for detecting related or redundant communities, helping to prompt merges or splits and maintain a balanced community ecosystem.
+1. **RepSpace.Host**  
+   **MVP**  
+   - **Content Hosting Services**: Centralized storage for platform-hosted content; optional support for user-hosted content for MVP.
+     - **Essential Classes**: `Content`, `HostOption`, `ContentMetadata`
 
-    ### Content Hosting and Distribution Modules
+2. **RepSpace.Host.Mirror**  
+   *Post-MVP*  
+   - **Content Mirroring and Caching**: Mirrors high-demand content based on interaction, providing reliable access.
 
-    **RepSpace.Host**
-        Content Hosting Services: 
-            Users select self-hosting, platform-hosting, or hybrid options; offers centralized storage for those preferring hosted content.
-        
-        RepSpace.Host.Mirror
-            Content Mirroring and Caching:
-                Facilitates content mirroring based on interaction frequency and user preference, ensuring availability even in decentralized hosting.
-        
-        RepSpace.Host.Dedicated
-            Dedicated Hosting Option:
-                Centralized hosting for users preferring platform-managed storage; supports high-reputation content mirroring for redundancy and archival.
+3. **RepSpace.Host.Dedicated**  
+   *Post-MVP*  
+   - **Dedicated Hosting Option**: Centralized storage option for content mirroring, enhancing redundancy for select content.
 
-    ### User Interaction and UI Modules
+---
 
-    **RepSpace.UI**
-        **RepSpace.UI.Web**
-            Web Application Interface:
-                Primary front-end interface for managing communities, participating in voting, and viewing user profiles.
-                
-        **RepSpace.UI.App**
-            Mobile Application Interface:
-                Extends full platform functionality to mobile users with optimized UX for on-the-go access to community features.
-                
-        **RepSpace.UI.User**
-            User Profile Management and Customization:
-                Manages user profiles, including customization options, gamification elements (badges, points), and personal achievement tracking.
+### User Interaction and UI Modules
 
-        **RepSpace.UI.Report**
-            Community Reporting and Engagement Metrics:
-                Provides administrators and high-reputation users with data insights into community engagement, participation, and growth health.
+1. **RepSpace.UI**  
+   **MVP**  
+   - **RepSpace.UI.Web**  
+       - **Web Application Interface**: Primary front end for community management, voting, and profiles.
+       - **Essential Classes**: `WebUI`, `CommunityPage`, `UserDashboard`
+   - **RepSpace.UI.User**  
+       - **User Profile Management and Customization**: Manages basic user profiles, reputation display, and voting influence.
+       - **Essential Classes**: `UserProfile`, `UserSettings`, `UserCustomization`
 
-    ### Support Modules
+2. **RepSpace.UI.App**  
+   *Post-MVP*  
+   - **Mobile Application Interface**: Extends functionality to mobile users with full community features.
 
-    **RepSpace.Data**
-        Data Models and Migrations:
-            Centralized models for database entities (users, reputation, content, communities), plus a migration pipeline to ensure consistency across core modules.
-    
-    **RepSpace.Notification**
-        Event and Notification System:
-            Event-driven system (e.g., using RabbitMQ) for real-time notifications about votes, moderation actions, or content updates, ensuring users are promptly informed of important actions.
+3. **RepSpace.UI.Report**  
+   *Post-MVP*  
+   - **Community Reporting and Engagement Metrics**: Provides data insights on engagement, ideal for admins and high-rep users.
 
-    **RepSpace.Storage**
-        IPFS Integration and Storage Management:
-            Manages storage for user-hosted content, including IPFS support for decentralized content sharing; coordinates with RepSpace.Host.Mirror for content redundancy.
-    
-    **RepSpace.Utils**
-        Utility and Common Helper Functions:
-            Common library for reusable functions, utilities, and error handling to keep shared code organized and reduce redundancy.
+---
 
-)
+### Support Modules
 
+1. **RepSpace.Data**  
+   **MVP**  
+   - **Data Models and Migrations**: Establishes database entities for MVP features (user, reputation, voting, etc.), including migration tools.
+     - **Essential Classes**: `MigrationScript`, `DbContext`
+
+2. **RepSpace.Notification**  
+   *Post-MVP*  
+   - **Event and Notification System**: Real-time notifications on votes, moderation, content updates; useful post-MVP for enhancing engagement.
+
+3. **RepSpace.Storage**  
+   *Post-MVP*  
+   - **IPFS Integration and Storage Management**: Manages IPFS-based content storage, complementing `RepSpace.Host.Mirror` for decentralized access.
+
+4. **RepSpace.Utils**  
+   **MVP**  
+   - **Utility and Common Helper Functions**: Library for shared utility functions across modules, including error handling and helpers.
+
+---
+
+### MVP Priorities
+
+1. **Core Functionality**: Start with `RepSpace.Core.Auth`, `RepSpace.Core.Rep`, and `RepSpace.Moderation` (only Voting).
+2. **Basic Content Hosting**: Include `RepSpace.Host` for centralized content storage.
+3. **UI Interaction**: `RepSpace.UI.Web` and `RepSpace.UI.User` to ensure web and basic profile management.
+4. **Data and Utilities**: `RepSpace.Data` and `RepSpace.Utils` provide foundational support for data integrity and helper methods.
+
+This streamlined structure provides essential MVP functionality while reserving analytics, extensive gamification, mobile features, and advanced hosting for later stages, keeping initial development manageable and focused.

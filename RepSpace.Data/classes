@@ -8,7 +8,7 @@ User and Profile Entities
         LastActiveDate
         ReputationScore (total reputation)
         CollaborationScore (total collaboration points)
-        Role (Admin, Moderator, Regular, etc.)
+        Role (Admin, Moderator, Trusted, etc.)
         Preferences (e.g., self-hosting vs. platform-hosting)
 
     UserProfile
