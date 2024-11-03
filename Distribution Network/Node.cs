@@ -1,171 +1,148 @@
-﻿using System.Diagnostics;
-using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Text.Json;
-using System.Xml.Linq;
-using Microsoft.CodeAnalysis.CSharp.Scripting;
+﻿using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.Scripting;
+using Node_Network_Api.Controllers;
+using System.Net.Http.Json;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Doorfail.Distribution.Network;
 
 public struct NodeInfo
 {
     public Guid Id { get; set; }
-    public string Name { get; set; }
+    public Uri Link { get; set; }
     public RSAParameters PublicKey { get; set; }
-    public Version ScriptVersion { get; set; }
+    public Version NodeVersion { get; set; }
 }
 
-public class Node
+public class Node : INodeRequests
 {
-    public readonly NodeInfo Info;
-    public Guid Id => Info.Id;
-    private readonly RSA _privateKey;
-    private RSAParameters PublicKey => Info.PublicKey;
+    private readonly NodeInfo _info;
+    public NodeInfo Info() => _info;
+    public Guid Id => _info.Id;
 
     // Node state based on silhouette data
-    private Script _state = new("Initial Script", "return \"Initial state.\";");
+    private List<Script> _scripts = new();
+    public int ScriptCount() => _scripts.Count;
 
     // Reference to the next node (for propagation)
-    public Node NextNode { get; set; }
-    public Node(string name = null)
+    public Uri? NextNodeUri { get; private set; }
+    public void NextNode(Uri newNextNodeUri) => NextNodeUri = newNextNodeUri;
+
+    private readonly Timer _workRequestTimer;
+    private readonly HttpClient _httpClient;
+
+    private readonly HashSet<Guid> _processedScriptGlobals = new();
+
+    public Node(Uri link, Uri? nextNodelink = null)
     {
-        Info.Id = Guid.NewGuid();
-        _privateKey = RSA.Create();
-        Info.PublicKey = _privateKey.ExportParameters(false);
-        Info.Name = name;
+        _info.Id = Guid.NewGuid();
+        _info.Link = link;
+        _httpClient = new HttpClient();
+        _workRequestTimer = new Timer(RequestWork, null, TimeSpan.Zero, TimeSpan.FromMinutes(1 + Random.Shared.NextDouble()));
+        NextNodeUri = nextNodelink ?? link; // Default to itself
+
     }
 
-    public RSAParameters GetPublicKey() => PublicKey;
+    public void PrimeScript(params Script[] scripts) => _scripts.AddRange(scripts);
 
-    public void SendBlob(Dictionary<RSAParameters, Script> data)
+    public void PurgeScript(params string[] scriptNames) => _scripts.RemoveAll(s => scriptNames.Contains(s.Name));
+
+    private void RequestWork(object state)
     {
-        // Create and send the blob to the next node
-        var blob = Blob.CreateCompressedBlob(data);
-        SendBlob(blob, this.PublicKey);
+        if (NextNodeUri == null)
+            return;
+
+        var requestBlob = new Blob([]);
+        SendBlobAsync(requestBlob, NextNodeUri).RunSynchronously();
     }
 
-    private void SendBlob(Dictionary<RSAParameters, Script> data, RSAParameters? intialSender = null)
+    public async Task SendBlobAsync(Blob blob, Uri uri)
     {
-        // Create and send the blob to the next node
-        var blob = Blob.CreateCompressedBlob(data);
-        Console.WriteLine($"{Id} sending blob to the next node...");
+        Console.WriteLine($"{Id} sending blob to {uri}...");
 
-        // Only send to the next node if it exists
-        NextNode.ReceiveBlob(blob, intialSender ?? this.PublicKey);
+        var response = await _httpClient.PostAsJsonAsync($"{uri}/api/node/receiveblob", blob);
+        response.EnsureSuccessStatusCode();
     }
 
-    private void SendBlob(Blob blob, RSAParameters intialSender)
+    public async Task ReceiveBlob(Blob blob)
     {
-        Console.WriteLine($"{Id} sending blob to the next node...");
-
-        // Only send to the next node if it exists
-        NextNode.ReceiveBlob(blob, intialSender);
-    }
-
-    public void ReceiveBlob(Blob blob, RSAParameters initialSender)
-    {
-        var silhouetteData = blob.ViewSilhouette(PublicKey, _privateKey);
-
-        if (silhouetteData != null)
+        if (!blob._compressedData.Any() && NextNodeUri != null)
         {
-            // Update node state with silhouette data as code
-            _state = silhouetteData;
-            Console.WriteLine($"{Id} updated: {_state.Code}");
-
+            await BalanceScriptsAsync(blob);
         }
         else
         {
-            Console.WriteLine($"{Id} could not decrypt silhouette for its public key.");
-        }
-
-        // Propagate the blob to the next node
-        // Prevent sending back to the sender to avoid loops
-        if (!NextNode?.PublicKey.Equals(initialSender) ?? false)
-        {
-            NextNode.SendBlob(blob, initialSender);
+            _scripts.AddRange(blob._compressedData.Select(cd => blob.ConsomeSilhouette(cd.Key, cd.Value)));
         }
     }
 
-    public async Task<string?> AggregateAsync(RSAParameters? publicKey = null, bool start = false)
+    private async Task BalanceScriptsAsync(Blob blob)
     {
-        if (!start && Info.PublicKey.Equals(publicKey))
+        if (NextNodeUri != null && _scripts.Count > await GetNextNodeScriptCountAsync())
         {
-            Console.WriteLine("Completed Aggregation");
-            return null;
+            int scriptsToTransfer = (_scripts.Count - await GetNextNodeScriptCountAsync()) / 2;
+            var scriptsToSend = _scripts.Take(scriptsToTransfer).ToList();
+            var scriptData = scriptsToSend.ToDictionary(s => Guid.NewGuid(), s => Encoding.UTF8.GetBytes(s.Code));
+            var transferBlob = new Blob(scriptData);
+
+            _scripts.RemoveAll(s => scriptsToSend.Contains(s));
+            await SendBlobAsync(transferBlob, NextNodeUri);
         }
-
-        Console.WriteLine($"{Info.Name} initiating aggregation request...");
-
-        var globals = new ScriptGlobals
-        {
-            Node = this.Info,
-            Data = new Dictionary<string, object>(),
-            Stats = new NetworkStats
-            {
-                Counter = 0,
-                Stopwatch = new Stopwatch(),
-                StartExecution = DateTimeOffset.Now,
-                LastExecution = null,
-                FPS = 0,
-            },
-        };
-
-        var tasks = new List<Task<string>>();
-        var nodes = new List<Node> { this };
-
-        // Collect all nodes in the network
-        var currentNode = this.NextNode;
-        while (currentNode != null && currentNode != this)
-        {
-            nodes.Add(currentNode);
-            currentNode = currentNode.NextNode;
-        }
-
-        // Request contributions from all nodes simultaneously
-        foreach (var node in nodes)
-        {
-            tasks.Add(node.ProvideContribution(globals));
-        }
-
-        var contributions = await Task.WhenAll(tasks);
-
-        return string.Join("\r\n", contributions);
     }
 
-    public async Task<string> ProvideContribution(ScriptGlobals globals)
+    private async Task<int> GetNextNodeScriptCountAsync()
+    {
+        var response = await _httpClient.GetAsync($"{NextNodeUri}/api/node/getscriptcount");
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync<int>();
+    }
+
+    public async Task<ScriptGlobals?> Run(ScriptGlobals globals)
     {
         try
         {
+            // Check if the current node has already processed this ScriptGlobals
+            if (_processedScriptGlobals.Contains(globals.Id))
+            {
+                return null;
+            }
+
+            // Mark the ScriptGlobals as processed
+            _processedScriptGlobals.Add(globals.Id);
+
             var scriptOptions = ScriptOptions.Default
                 .WithReferences(AppDomain.CurrentDomain.GetAssemblies().Where(a => !string.IsNullOrEmpty(a.Location))) // Add default assemblies with location
-                .WithReferences(await Task.WhenAll(_state.Packages.Select(PackageManager.LoadNuGetAssembly))) // Load packages
-                .WithImports(_state.Imports) // Add imports
-                .WithFilePath($"{_state.Name}.csx"); // Optional: set a file path for debugging
+                .WithReferences(await Task.WhenAll(_scripts.SelectMany(s => s.Packages).Select(PackageManager.LoadNuGetAssembly))) // Load packages
+                .WithImports(_scripts.SelectMany(s => s.Imports)) // Add imports
+                .WithFilePath($"{_scripts.First().Name}.csx"); // Optional: set a file path for debugging
 
             // Create a cancellation token
             using var cancellationTokenSource = new CancellationTokenSource();
             var cancellationToken = cancellationTokenSource.Token;
 
-            // Compile and execute the code in _state with the options, globals, and cancellation token
-            var result = await CSharpScript.EvaluateAsync(_state.Code, scriptOptions, globals, typeof(ScriptGlobals), cancellationToken);
+            // Compile and execute the code in _scripts with the options, globals, and cancellation token
+            var results = new List<string>();
+            foreach (var script in _scripts)
+            {
+                var result = await CSharpScript.EvaluateAsync<string>(script.Code, scriptOptions, globals, typeof(ScriptGlobals), cancellationToken);
+                results.Add(result);
+            }
 
-            return $"Node {Info.Name} contributes: {result}";
+            // Post ScriptGlobals to the next node
+            if (NextNodeUri != null)
+            {
+                var response = await _httpClient.PostAsJsonAsync($"{NextNodeUri}/api/node/providecontribution", globals);
+                response.EnsureSuccessStatusCode();
+            }
         }
         catch (Exception ex)
         {
             // Handle compilation/execution errors
-            Console.WriteLine($"{Info.Name} encountered an error in code execution: {ex.Message}\r\n{ex.InnerException?.Message}\r\n{ex.StackTrace}");
-            return $"Node {Info.Name} encountered an error.";
+            Console.WriteLine($"{_info.Link} encountered an error in code execution: {ex.Message}\r\n{ex.InnerException?.Message}\r\n{ex.StackTrace}");
         }
-    }
 
-    public void InsertNodeAfter(Node newNode)
-    {
-        // Insert the new node after the current node
-        newNode.NextNode = this.NextNode;
-        this.NextNode = newNode;
+        return globals;
     }
 
     public void UpdateGlobals(string key, object value)
@@ -178,80 +155,6 @@ public class Node
     }
 
     private readonly object _globalsLock = new object();
-    private readonly Dictionary<string, object> _globalsData = [];
+    private readonly Dictionary<string, object> _globalsData = new();
 
-    public async Task<string> ProvideContributionWithWait(ScriptGlobals globals)
-    {
-        try
-        {
-            var scriptOptions = ScriptOptions.Default
-                .WithReferences(AppDomain.CurrentDomain.GetAssemblies().Where(a => !string.IsNullOrEmpty(a.Location))) // Add default assemblies with location
-                .WithReferences(await Task.WhenAll(_state.Packages.Select(PackageManager.LoadNuGetAssembly))) // Load packages
-                .WithImports(_state.Imports) // Add imports
-                .WithFilePath($"{_state.Name}.csx"); // Optional: set a file path for debugging
-
-            // Create a cancellation token
-            using var cancellationTokenSource = new CancellationTokenSource();
-            var cancellationToken = cancellationTokenSource.Token;
-
-            // Compile and execute the code in _state with the options, globals, and cancellation token
-            var result = await CSharpScript.EvaluateAsync<string>(_state.Code, scriptOptions, globals, typeof(ScriptGlobals), cancellationToken);
-
-            // Access the modified state
-            Console.WriteLine($"Modified ExtraState: N/A");
-
-            return $"Node {Info.Name} contributes: {result}";
-        }
-        catch (Exception ex)
-        {
-            // Handle compilation/execution errors
-            Console.WriteLine($"{Info.Name} encountered an error in code execution: {ex.Message}\r\n{ex.InnerException?.Message}\r\n{ex.StackTrace}");
-            return $"Node {Info.Name} encountered an error.";
-        }
-    }
-}
-
-
-public class Blob(Dictionary<RSAParameters, byte[]> compressedData)
-{
-    public readonly Dictionary<RSAParameters, byte[]> _compressedData = compressedData;
-
-    public static Blob CreateCompressedBlob(Dictionary<RSAParameters, Script> data)
-    {
-        var compressedData = new Dictionary<RSAParameters, byte[]>();
-
-        foreach (var (key, script) in data)
-        {
-            // Serialize the Script object to JSON
-            var scriptJson = JsonSerializer.Serialize(script);
-            var scriptBytes = Encoding.UTF8.GetBytes(scriptJson);
-
-            using var rsa = RSA.Create();
-            rsa.ImportParameters(key);
-            var encryptedChunk = rsa.Encrypt(scriptBytes, RSAEncryptionPadding.Pkcs1);
-            compressedData[key] = encryptedChunk;
-        }
-
-        return new Blob(compressedData);
-    }
-
-    public Script? ViewSilhouette(RSAParameters publicKey, RSA privateKey)
-    {
-        if (!_compressedData.ContainsKey(publicKey))
-        {
-            return null;
-        }
-
-        try
-        {
-            var encryptedChunk = _compressedData[publicKey];
-            var decryptedBytes = privateKey.Decrypt(encryptedChunk, RSAEncryptionPadding.Pkcs1);
-            var scriptJson = Encoding.UTF8.GetString(decryptedBytes);
-            return JsonSerializer.Deserialize<Script>(scriptJson);
-        }
-        catch (CryptographicException)
-        {
-            return null;
-        }
-    }
 }

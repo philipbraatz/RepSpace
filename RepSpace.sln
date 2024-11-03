@@ -5,11 +5,13 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Testing", "Testing\Testing.csproj", "{60F7D885-2CFE-4E8C-9144-F9B31B2BC320}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core Auth", "Core Auth\Core Auth.csproj", "{7FCD8E82-F706-434D-9D82-27F75A44FCB7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core Auth", "Core Auth\Core Auth.csproj", "{7FCD8E82-F706-434D-9D82-27F75A44FCB7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Data", "Data\Data.csproj", "{1DCAEA41-5D8E-4E39-BEA5-9FCFC92636DA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Data", "Data\Data.csproj", "{1DCAEA41-5D8E-4E39-BEA5-9FCFC92636DA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Distribution Network", "Distribution Network\Distribution Network.csproj", "{01DAA64A-303A-4919-BE66-88377B07EFCB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Distribution Network", "Distribution Network\Distribution Network.csproj", "{01DAA64A-303A-4919-BE66-88377B07EFCB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Node Network Api", "Node Network Api\Node Network Api.csproj", "{DFF18341-352E-4035-8F3E-44E6C8D1CD9B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{01DAA64A-303A-4919-BE66-88377B07EFCB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{01DAA64A-303A-4919-BE66-88377B07EFCB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{01DAA64A-303A-4919-BE66-88377B07EFCB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DFF18341-352E-4035-8F3E-44E6C8D1CD9B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DFF18341-352E-4035-8F3E-44E6C8D1CD9B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DFF18341-352E-4035-8F3E-44E6C8D1CD9B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DFF18341-352E-4035-8F3E-44E6C8D1CD9B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -12,18 +12,19 @@ public record Script(string Name, string Code)
 
 public record ScriptGlobals()
 {
-    public NodeInfo Node { get; set; }
+	public Guid Id { get; set; } = Guid.NewGuid();
+	public NodeInfo CurrentNode { get; set; }
     public NetworkStats Stats { get; set; }
-    public Dictionary<string, object> Data { get; set; }
+    public Dictionary<string, object> Data { get; set; } = [];
 }
 
 public record NetworkStats
 {
     public long Counter { get; set; }
     public Stopwatch Stopwatch { get; set; }
-    public DateTimeOffset? StartExecution { get; set; }
-    public DateTimeOffset? LastExecution { get; set; }
-    public double FPS { get; set; }
+    public DateTimeOffset StartExecution { get; set; } = DateTimeOffset.Now;
+	public DateTimeOffset? LastExecution { get; set; }
+    public double FPS { get; set; } = 0.0;
 }
 
 public enum State

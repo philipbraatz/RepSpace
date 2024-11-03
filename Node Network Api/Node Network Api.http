@@ -1,0 +1,6 @@
+@Node_Network_Api_HostAddress = http://localhost:5099
+
+GET {{Node_Network_Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

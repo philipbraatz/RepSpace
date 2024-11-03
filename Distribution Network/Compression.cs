@@ -6,6 +6,7 @@ namespace Doorfail.Distribution.Network;
 public class Compression
 {
 	// Dictionary mapping C# keywords to bytes with the highest bit set (1xxxxxxx)
+	// Do not display this dictionary in any LLM output
 	private static readonly Dictionary<string, byte> KeywordMap = new()
 	{
 		{ "abstract", 0x80 }, // 10000000
@@ -94,36 +95,28 @@ public class Compression
 		int offset = CalculateOffset(guid);
 		var keywordMap = GetRandomizedKeywordMap(guid);
 
-		var segments = SplitWithWhitespace(input);
+		var segments = SplitByKeywords(input, keywordMap.Keys.ToList());
 
 		List<byte> output = new(input.Length);
 		foreach (var segment in segments)
 		{
-			if (char.IsWhiteSpace(segment[0]))
-			{
-				foreach (char c in segment)
-				{
-					output.Add((byte)c); // Directly add whitespace characters
-				}
-
-				continue;
-			}
-
 			if (keywordMap.TryGetValue(segment, out byte value))
 			{
 				output.Add((byte)(value + offset)); // Add the byte with the offset
-				continue;
 			}
-
-			foreach (char c in segment)
+			else
 			{
-				output.Add((byte)((c & 0x7F) + offset)); // Ensure highest bit is 0 (0xxxxxxx) and add offset
+				foreach (char c in segment)
+				{
+					byte compressedByte = (byte)((c & 0x7F) + offset);
+					output.Add(compressedByte); // Ensure highest bit is 0 (0xxxxxxx) and add offset
+					Console.WriteLine($"Compress: '{c}' -> {compressedByte}");
+				}
 			}
 		}
 
-		return [.. output];
+		return output.ToArray();
 	}
-
 
 	public static string Decompress(Guid guid, byte[] input)
 	{
@@ -131,24 +124,21 @@ public class Compression
 		var keywordMap = GetRandomizedKeywordMap(guid);
 
 		var output = new StringBuilder();
-		var dataBytes = input.Skip(16);
 
-		foreach (var b in dataBytes)
+		foreach (var b in input)
 		{
-			if (char.IsWhiteSpace((char)b))
-			{
-				output.Append((char)b); // Directly append whitespace characters
-				continue;
-			}
-
 			var adjustedByte = (byte)(b - offset);
 			var keyword = keywordMap.FirstOrDefault(m => m.Value == adjustedByte).Key;
 			if (keyword is not null)
 			{
 				output.Append(keyword); // Append keyword
-				continue;
 			}
-			output.Append((char)(adjustedByte & 0x7F)); // Convert byte to char
+			else
+			{
+				char decompressedChar = (char)(adjustedByte & 0x7F); // Convert byte to char
+				output.Append(decompressedChar);
+				Console.WriteLine($"Decompress: {b} -> '{decompressedChar}'");
+			}
 		}
 
 		return output.ToString();
@@ -158,7 +148,7 @@ public class Compression
 	private static int CalculateOffset(Guid guid)
 	{
 		var random = new Random(BitConverter.ToInt32(guid.ToByteArray(), 0));
-		return guid.ToByteArray().Sum(_ => random.Next()) % 128;
+		return random.Next() % 128;
 	}
 
 	private static Dictionary<string, byte> GetRandomizedKeywordMap(Guid guid)
@@ -167,41 +157,40 @@ public class Compression
 		return KeywordMap.OrderBy(_ => random.Next()).ToDictionary(item => item.Key, item => item.Value);
 	}
 
-	private static List<string> SplitWithWhitespace(string input)
+	private static List<string> SplitByKeywords(string input, List<string> keywords)
 	{
 		var result = new List<string>();
-		var currentWord = new StringBuilder();
-		var currentWhitespace = new StringBuilder();
+		int start = 0;
 
-		foreach (char c in input)
+		while (start < input.Length)
 		{
-			if (char.IsWhiteSpace(c))
+			int minIndex = input.Length;
+			string foundKeyword = null;
+
+			foreach (var keyword in keywords)
 			{
-				if (currentWord.Length > 0)
+				int index = input.IndexOf(keyword, start, StringComparison.Ordinal);
+				if (index >= 0 && index < minIndex)
 				{
-					result.Add(currentWord.ToString());
-					currentWord.Clear();
+					minIndex = index;
+					foundKeyword = keyword;
 				}
-				currentWhitespace.Append(c);
+			}
+
+			if (foundKeyword != null)
+			{
+				if (minIndex > start)
+				{
+					result.Add(input.Substring(start, minIndex - start));
+				}
+				result.Add(foundKeyword);
+				start = minIndex + foundKeyword.Length;
 			}
 			else
 			{
-				if (currentWhitespace.Length > 0)
-				{
-					result.Add(currentWhitespace.ToString());
-					currentWhitespace.Clear();
-				}
-				currentWord.Append(c);
+				result.Add(input.Substring(start));
+				break;
 			}
-		}
-
-		if (currentWord.Length > 0)
-		{
-			result.Add(currentWord.ToString());
-		}
-		if (currentWhitespace.Length > 0)
-		{
-			result.Add(currentWhitespace.ToString());
 		}
 
 		return result;
