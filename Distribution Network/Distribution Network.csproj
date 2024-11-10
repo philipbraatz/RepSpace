@@ -9,6 +9,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Main.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Main.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.11.0" />
     <PackageReference Include="NuGet.Protocol" Version="6.11.1" />
   </ItemGroup>
